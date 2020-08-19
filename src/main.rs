@@ -1,4 +1,5 @@
 use rustrbx::{AsyncTimeline, AsyncItemIterator};
+use rustrbx::users::get;
 
 #[tokio::main]
 async fn main() -> rustrbx::Result<()> {
@@ -9,7 +10,7 @@ async fn main() -> rustrbx::Result<()> {
     //let query = pointed.timeline();
     //println!("{:#?}", query.current().data);
     //println!("new: \n {:#?}", query.forward().await?.data);
-    let query_results = rustrbx::users::search("TGSCom".to_string()).await?;
+    //let query_results = rustrbx::users::search("TGSCom".to_string()).await?;
     //println!("{:#?}", query_results.data);
     //let timeline = query_results.timeline();
     //println!("{:#?}", timeline.forward().await?.data);
@@ -23,7 +24,8 @@ async fn main() -> rustrbx::Result<()> {
     //    println!("i: {}, {:?}", index, iter.next().await?);
     //    index += 1;
     //}
-    let mut iter = AsyncItemIterator::with_capacity(query_results, &mut 400u32).await?;
-    println!("{:#?}", &iter.current().current().data);
+    //let mut iter = AsyncItemIterator::with_capacity(query_results, &mut 400u32).await?;
+    //println!("{:#?}", &iter.current().current().data);
+    println!("{:#?}", get(1).await?);
     Ok(())
 }

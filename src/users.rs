@@ -17,7 +17,7 @@ pub struct UserQuery {
 #[serde(rename_all = "camelCase")]
 pub struct User {
     /// Description of the user
-    pub desc: String,
+    pub description: String,
     /// Iso instant date of the creation of the account
     pub created: String,
     pub is_banned: bool,
@@ -39,4 +39,14 @@ pub async fn search(keyword: String) -> Result<PageCursor<Vec<UserQuery>>> {
     let mut json = resp.json::<PageCursor<Vec<UserQuery>>>().await?;
     json.base_url = url;
     Ok(json)
+}
+
+pub async fn get(id: u64) -> Result<User> {
+    let client = Client::new();
+    Ok(client
+        .get(&format!("{}/v1/users/{}", BASE_URL, id))
+        .send()
+        .await?
+        .json()
+        .await?)
 }
