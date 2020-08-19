@@ -1,4 +1,7 @@
 use serde::{Deserialize, Serialize};
+use crate::CursorPage;
+use reqwest::Client;
+use crate::Result;
 
 /// Represents a user returned by a query's response.
 #[derive(Deserialize, Serialize, Debug)]
@@ -23,3 +26,17 @@ pub struct User {
     pub display_name: String
 }
 
+const BASE_URL: &str = "https://users.roblox.com";
+
+pub async fn search(keyword: String) -> Result<CursorPage<Vec<UserQuery>>> {
+    let client = Client::new();
+    let resp = client
+        .get(&format!("{}/v1/users/search", BASE_URL).to_string())
+        .query(&[("keyword", &keyword)])
+        .send()
+        .await?;
+    let url = resp.url().to_string();
+    let mut json = resp.json::<CursorPage<Vec<UserQuery>>>().await?;
+    json.base_url = url;
+    Ok(json)
+}

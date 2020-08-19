@@ -22,9 +22,9 @@ use serde::de::DeserializeOwned;
 /// Represents a response that might contain a cursor that can go forwards or backwards.
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CursorPage<'a, T: std::marker::Sync + DeserializeOwned + Send> {
+pub struct CursorPage<T> {
     #[serde(skip)]
-    pub base_url: Option<&'a String>,
+    pub base_url: String,
     pub previous_page_cursor: Option<String>,
     pub next_page_cursor: Option<String>,
     pub data: T
@@ -32,10 +32,10 @@ pub struct CursorPage<'a, T: std::marker::Sync + DeserializeOwned + Send> {
 
 /// Allows you to create a instance of a timeline from the current page.
 /// The timeline lifetime created is based off the page's lifetime.
-impl<'a, T: std::marker::Sync + DeserializeOwned + Send> CursorPage<'a, T> {
+impl<'a, T: std::marker::Sync + DeserializeOwned + Send> CursorPage<T> {
     pub fn timeline(&self) -> impl AsyncTimeline<Output = CursorPage<T>>  + '_ {
         CursorAsyncTimeline {
-            base_url: self.base_url.as_ref().unwrap(),
+            base_url: &self.base_url,
             current: self
         }
     }
@@ -63,14 +63,14 @@ pub trait AsyncTimeline {
 /// Base url and the current reference lives as long as the timeline.
 struct CursorAsyncTimeline<'a, T: std::marker::Sync + DeserializeOwned + Send> {
     base_url: &'a String,
-    current: &'a CursorPage<'a, T>
+    current: &'a CursorPage<T>
 }
 
 /// Implementation of CursorAsyncTimeline
 /// As implemented according to the specs of [AsyncTimeline].
 #[async_trait]
 impl<'a, T: std::marker::Sync + DeserializeOwned + Send> AsyncTimeline for CursorAsyncTimeline<'a, T> {
-    type Output = CursorPage<'a, T>;
+    type Output = CursorPage<T>;
 
     fn current(&self) -> &Self::Output {
         self.current
@@ -86,7 +86,7 @@ impl<'a, T: std::marker::Sync + DeserializeOwned + Send> AsyncTimeline for Curso
 }
 
 /// Points to a cursor id and retrieves the cursor page from the specified endpoint.
-pub async fn point<'a, T: std::marker::Sync + serde::de::DeserializeOwned + Send>(base_url: &'a String, cursor_id: &'a String) -> Result<CursorPage<'a, T>> {
+pub async fn point<'a, T: std::marker::Sync + serde::de::DeserializeOwned + Send>(base_url: &'a String, cursor_id: &'a String) -> Result<CursorPage<T>> {
     let client = Client::new();
     let mut resp = client
         .get(base_url)
@@ -95,7 +95,7 @@ pub async fn point<'a, T: std::marker::Sync + serde::de::DeserializeOwned + Send
         .await?
         .json::<CursorPage<T>>()
         .await?;
-    resp.base_url = Some(&base_url);
+    resp.base_url = base_url.to_string();
     Ok(resp)
 }
 
