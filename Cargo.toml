@@ -1,0 +1,20 @@
+[package]
+name = "RustRbx"
+version = "0.1.0"
+authors = ["PizzaCrust <pizzacrustcoder@gmail.com>"]
+edition = "2018"
+
+[lib]
+name = "rustrbx"
+path = "src/lib.rs"
+
+[[bin]]
+name = "rustrbx"
+path = "src/main.rs"
+
+[dependencies]
+error-chain = "0.12.4"
+serde = { version = "1.0.115", features = ["derive"] }
+reqwest = { version = "0.10.7", features = ["json"] }
+tokio = { version = "0.2.22", features = ["macros"] }
+async-trait = "0.1.38"
