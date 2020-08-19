@@ -30,6 +30,8 @@ pub struct CursorPage<'a, T: std::marker::Sync + DeserializeOwned + Send> {
     pub data: T
 }
 
+/// Allows you to create a instance of a timeline from the current page.
+/// The timeline lifetime created is based off the page's lifetime.
 impl<'a, T: std::marker::Sync + DeserializeOwned + Send> CursorPage<'a, T> {
     pub fn timeline(&self) -> impl AsyncTimeline<Output = CursorPage<T>>  + '_ {
         CursorAsyncTimeline {
@@ -57,11 +59,15 @@ pub trait AsyncTimeline {
 
 }
 
+/// Asynchronous cursor timeline implementation. T must be a serde deserializable type.
+/// Base url and the current reference lives as long as the timeline.
 struct CursorAsyncTimeline<'a, T: std::marker::Sync + DeserializeOwned + Send> {
     base_url: &'a String,
     current: &'a CursorPage<'a, T>
 }
 
+/// Implementation of CursorAsyncTimeline
+/// As implemented according to the specs of [AsyncTimeline].
 #[async_trait]
 impl<'a, T: std::marker::Sync + DeserializeOwned + Send> AsyncTimeline for CursorAsyncTimeline<'a, T> {
     type Output = CursorPage<'a, T>;
