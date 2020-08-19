@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use crate::CursorPage;
+use crate::PageCursor;
 use reqwest::Client;
 use crate::Result;
 
@@ -28,15 +28,15 @@ pub struct User {
 
 const BASE_URL: &str = "https://users.roblox.com";
 
-pub async fn search(keyword: String) -> Result<CursorPage<Vec<UserQuery>>> {
+pub async fn search(keyword: String) -> Result<PageCursor<Vec<UserQuery>>> {
     let client = Client::new();
     let resp = client
         .get(&format!("{}/v1/users/search", BASE_URL).to_string())
-        .query(&[("keyword", &keyword)])
+        .query(&[("limit", "100"),("keyword", &keyword)])
         .send()
         .await?;
     let url = resp.url().to_string();
-    let mut json = resp.json::<CursorPage<Vec<UserQuery>>>().await?;
+    let mut json = resp.json::<PageCursor<Vec<UserQuery>>>().await?;
     json.base_url = url;
     Ok(json)
 }
